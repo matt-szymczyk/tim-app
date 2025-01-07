@@ -1,13 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuthRequest, exchangeCodeAsync, revokeAsync, ResponseType } from 'expo-auth-session';
-import { Button, Alert } from 'react-native';
+import { Button, Alert, Platform } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const clientId = '5o5kgscohrkogihj339mgj1ol8';
 const userPoolUrl = 'https://timapp.auth.eu-north-1.amazoncognito.com';
-const redirectUri = 'http://localhost:8081';
+const redirectUri = Platform.select({
+  native: 'myapp://auth',
+  web: 'http://localhost:8081'
+});
 
 export default function Auth() {
   const [authTokens, setAuthTokens] = useState(null);
@@ -61,15 +64,20 @@ export default function Auth() {
   }, [discoveryDocument, request, response]);
 
   const logout = async () => {
-    const revokeResponse = await revokeAsync(
-      {
-        clientId: clientId,
-        token: authTokens.refreshToken,
-      },
-      discoveryDocument
-    );
-    if (revokeResponse) {
+    try {
+      await revokeAsync(
+        {
+          clientId: clientId,
+          token: authTokens.refreshToken,
+        },
+        discoveryDocument
+      );
+      // Regardless of the response, clear the tokens
       setAuthTokens(null);
+    } catch (error) {
+      // Even if revocation fails, we should still clear local tokens
+      setAuthTokens(null);
+      console.log('Logout error:', error);
     }
   };
   console.log('authTokens: ' + JSON.stringify(authTokens));
@@ -78,4 +86,5 @@ export default function Auth() {
   ) : (
     <Button disabled={!request} title="Login" onPress={() => promptAsync()} />
   );
+
 }
