@@ -2,9 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Button, StyleSheet } from 'react-native';
 import { useWarehouseService } from '../../components/warehouseService';
+import { useAuth } from '../../components/AuthContext';
 
 export default function WarehouseListScreen() {
   const { listWarehouses, createWarehouse } = useWarehouseService();
+  const { authTokens } = useAuth(); // Add this line
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,8 +20,11 @@ export default function WarehouseListScreen() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    // Only fetch when authTokens are available
+    if (authTokens?.idToken) {
+      fetchData();
+    }
+  }, [authTokens]); // Add authTokens as dependency
 
   // Example: create a dummy warehouse
   const handleCreateWarehouse = async () => {
