@@ -17,33 +17,23 @@ export interface Warehouse {
  * A simple helper to fetch with Auth headers
  */
 async function apiFetch(path: string, method: string, token: string, body?: any) {
-  const executeRequest = async (currentToken: string) => {
-    const headers: any = {
-      'Authorization': `Bearer ${currentToken}`,
-    };
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) {
-      const errorBody = await res.text();
-      throw new Error(`API error: ${res.status} - ${errorBody}`);
-    }
-    return res.json();
+  console.log(`API call: ${method} ${path}`);
+  console.log('Auth token:', token);
+  console.log('Body:', body);
+  const headers: any = {
+    // 'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
   };
-
-  try {
-    return await executeRequest(token);
-  } catch (error: any) {
-    if (error.message.includes('401')) {
-      // Get fresh tokens from AuthContext
-      const newToken = await refreshTokens();
-      // Retry with new token
-      return await executeRequest(newToken);
-    }
-    throw error;
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    const errorBody = await res.text();
+    throw new Error(`API error: ${res.status} - ${errorBody}`);
   }
+  return res.json();
 }
 
 export function useWarehouseService() {

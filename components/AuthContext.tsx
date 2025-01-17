@@ -153,19 +153,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Refresh tokens if about to expire
   const refreshTokens = async () => {
-    if (!authTokens?.refreshToken) throw new Error('No refresh token available');
-    
-    const refreshed = await refreshAsync(
-      {
-        clientId,
-        refreshToken: authTokens.refreshToken,
-      },
-      discoveryDocument
-    );
-    
-    setAuthTokens(refreshed);
-    await saveTokensToStore(refreshed);
-    return refreshed.idToken; // Return the new token for immediate use
+    if (!authTokens?.refreshToken) return;
+    try {
+      const refreshed = await refreshAsync(
+        {
+          clientId,
+          refreshToken: authTokens.refreshToken,
+        },
+        discoveryDocument
+      );
+      setAuthTokens(refreshed);
+      await saveTokensToStore(refreshed);
+    } catch (error) {
+      console.error('refresh error', error);
+      // Possibly force sign out?
+      // signOut();
+    }
   };
 
   const value: AuthContextProps = {
