@@ -14,6 +14,10 @@ export default function RootLayout() {
           name="auth"
           options={{ title: "Auth" }}
         />
+        <Tabs.Screen
+          name="itemManagement"
+          options={{ title: "Items" }}
+        />
         {/* Add a screen for warehouses */}
         <Tabs.Screen
           name="warehouses/index"
