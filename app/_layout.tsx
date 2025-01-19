@@ -7,14 +7,6 @@ export default function RootLayout() {
     <AuthProvider>
       <Tabs>
         <Tabs.Screen
-          name="index"
-          options={{ title: "Home" }}
-        />
-        <Tabs.Screen
-          name="auth"
-          options={{ title: "Auth" }}
-        />
-        <Tabs.Screen
           name="itemManagement"
           options={{ title: "Items" }}
         />
@@ -23,6 +15,10 @@ export default function RootLayout() {
           name="warehouses/index"
           options={{ title: "Warehouses" }}
         />
+      <Tabs.Screen
+        name="auth"
+        options={{ title: "Auth" }}
+      />
       </Tabs>
     </AuthProvider>
   );
