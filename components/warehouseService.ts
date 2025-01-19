@@ -14,6 +14,12 @@ export interface Warehouse {
   createdAt?: number;
 }
 
+export interface Item {
+  itemId: string;
+  itemName: string;
+  quantity: number;
+}
+
 /**
  * A simple helper to fetch with Auth headers
  */
@@ -22,7 +28,7 @@ async function apiFetch(path: string, method: string, token: string, body?: any)
   console.log('Auth token:', token);
   console.log('Body:', body);
   const headers: any = {
-    // 'Content-Type': 'application/json',
+    'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   };
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -91,31 +97,64 @@ export function useWarehouseService() {
 
     // You can similarly add "listItems", "createItem", etc.
 
-    createItem: async (warehouseId: string, itemId: string, itemName: string, quantity: number) => {
+    // createItem: async (warehouseId: string, itemId: string, itemName: string, quantity: number) => {
+    //   const body = { itemId, itemName, quantity };
+    //   const data = await apiFetch(`/warehouses/${warehouseId}/items`, 'POST', accessToken, body);
+    //   return data;
+    // },
+
+    // getItem: async (warehouseId: string, itemId: string): Promise<any> => {
+    //   const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'GET', accessToken);
+    //   return data as any;
+    // },
+
+    // updateItem: async (warehouseId: string, itemId: string, itemName: string, quantity: number) => {
+    //   const body = { itemName, quantity };
+    //   const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'PUT', accessToken, body);
+    //   return data;
+    // },
+
+    // deleteItem: async (warehouseId: string, itemId: string) => {
+    //   const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'DELETE', accessToken);
+    //   return data;
+    // },
+
+    // listItems: async (warehouseId: string): Promise<any[]> => {
+    //   const data = await apiFetch(`/warehouses/${warehouseId}/items`, 'GET', accessToken);
+    //   return data as any[];
+    // }
+
+    createItem: async (
+      warehouseId: string, 
+      itemId: string, 
+      itemName: string, 
+      quantity: number
+    ): Promise<Item> => {
       const body = { itemId, itemName, quantity };
       const data = await apiFetch(`/warehouses/${warehouseId}/items`, 'POST', accessToken, body);
-      return data;
+      return data as Item;
     },
-
-    getItem: async (warehouseId: string, itemId: string): Promise<any> => {
+    
+    getItem: async (warehouseId: string, itemId: string): Promise<Item> => {
       const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'GET', accessToken);
-      return data as any;
+      return data as Item;
     },
-
-    updateItem: async (warehouseId: string, itemId: string, itemName: string, quantity: number) => {
+    
+    updateItem: async (
+      warehouseId: string, 
+      itemId: string, 
+      itemName: string, 
+      quantity: number
+    ): Promise<Item> => {
       const body = { itemName, quantity };
       const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'PUT', accessToken, body);
-      return data;
+      return data as Item;
     },
-
-    deleteItem: async (warehouseId: string, itemId: string) => {
-      const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'DELETE', accessToken);
-      return data;
-    },
-
-    listItems: async (warehouseId: string): Promise<any[]> => {
+    
+    listItems: async (warehouseId: string): Promise<Item[]> => {
       const data = await apiFetch(`/warehouses/${warehouseId}/items`, 'GET', accessToken);
-      return data as any[];
-    }
+      return data as Item[];
+    },
+    
   };
 }
