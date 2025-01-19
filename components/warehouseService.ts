@@ -1,4 +1,5 @@
 // app/warehouseService.ts
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { useAuth } from "./AuthContext";
 
 const API_BASE_URL = 'https://t69lnh1vyd.execute-api.eu-north-1.amazonaws.com'; 
@@ -93,6 +94,22 @@ export function useWarehouseService() {
     createItem: async (warehouseId: string, itemId: string, itemName: string, quantity: number) => {
       const body = { itemId, itemName, quantity };
       const data = await apiFetch(`/warehouses/${warehouseId}/items`, 'POST', accessToken, body);
+      return data;
+    },
+
+    getItem: async (warehouseId: string, itemId: string): Promise<any> => {
+      const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'GET', accessToken);
+      return data as any;
+    },
+
+    updateItem: async (warehouseId: string, itemId: string, itemName: string, quantity: number) => {
+      const body = { itemName, quantity };
+      const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'PUT', accessToken, body);
+      return data;
+    },
+
+    deleteItem: async (warehouseId: string, itemId: string) => {
+      const data = await apiFetch(`/warehouses/${warehouseId}/items/${itemId}`, 'DELETE', accessToken);
       return data;
     },
 
