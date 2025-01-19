@@ -13,6 +13,9 @@ import { Picker } from '@react-native-picker/picker';
 import { useWarehouseService } from '../components/warehouseService';
 import { useAuth } from '../components/AuthContext';
 
+// 1) IMPORT THE SCANNER OVERLAY
+import ScannerOverlay from '../components/ScannerOverlay';
+
 export default function ItemManagementScreen() {
   // We use the same service to get warehouses & items
   const {
@@ -41,6 +44,9 @@ export default function ItemManagementScreen() {
   const [quantity, setQuantity] = useState('');
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
+  // 2) STATE FOR SHOWING SCANNER
+  const [isScanning, setIsScanning] = useState(false);
+
   // Fetch warehouses on mount (once tokens are ready)
   useEffect(() => {
     if (authTokens?.idToken) {
@@ -53,11 +59,6 @@ export default function ItemManagementScreen() {
       setError(null);
       const data = await listWarehouses();
       setWarehouses(data);
-
-      // Optionally, auto-select the first warehouse if you want:
-      // if (data.length > 0) {
-      //   setSelectedWarehouseId(data[0].warehouseId);
-      // }
     } catch (err: any) {
       setError(err.message);
     }
@@ -89,7 +90,6 @@ export default function ItemManagementScreen() {
       setError(null);
       await createItem(selectedWarehouseId, itemId, itemName, parseInt(quantity) || 0);
       await fetchItems(selectedWarehouseId);
-      // Clear form
       clearItemForm();
     } catch (err: any) {
       setError(err.message);
@@ -103,7 +103,6 @@ export default function ItemManagementScreen() {
       setError(null);
       await updateItem(selectedWarehouseId, selectedItem.itemId, itemName, parseInt(quantity));
       await fetchItems(selectedWarehouseId);
-      // Reset state
       clearItemForm();
     } catch (err: any) {
       setError(err.message);
@@ -125,7 +124,7 @@ export default function ItemManagementScreen() {
   // When user taps an item in the list, populate form for editing
   const handleSelectItem = (item: any) => {
     setSelectedItem(item);
-    setItemId(item.itemId);      // Might choose to disable editing itemId in your UI
+    setItemId(item.itemId);
     setItemName(item.itemName);
     setQuantity(String(item.quantity));
   };
@@ -135,6 +134,12 @@ export default function ItemManagementScreen() {
     setItemId('');
     setItemName('');
     setQuantity('');
+  };
+
+  // 3) Callback when a barcode is scanned
+  const handleBarcodeScanned = (barcodeData: string) => {
+    setIsScanning(false);
+    setItemId(barcodeData);
   };
 
   return (
@@ -165,16 +170,20 @@ export default function ItemManagementScreen() {
           <Text style={styles.label}>
             {selectedItem ? 'Edit Item' : 'New Item'}
           </Text>
-          {/* Item ID (only if creating or for reference) */}
+
+          {/* Item ID Input */}
           {!selectedItem && (
-            <TextInput
-              style={styles.input}
-              placeholder="Item ID"
-              value={itemId}
-              onChangeText={setItemId}
-            />
+            <View style={styles.row}>
+              <TextInput
+                style={[styles.input, { flex: 1 }]}
+                placeholder="Item ID"
+                value={itemId}
+                onChangeText={setItemId}
+              />
+              {/* 4) Button to launch scanner */}
+              <Button title="Scan" onPress={() => setIsScanning(true)} />
+            </View>
           )}
-          {/* If you want itemId always editable, remove the condition above. */}
 
           <TextInput
             style={styles.input}
@@ -229,9 +238,16 @@ export default function ItemManagementScreen() {
           )}
         />
       )}
-
       {selectedWarehouseId && items.length === 0 && (
         <Text style={styles.info}>No items found for this warehouse.</Text>
+      )}
+
+      {/* 5) CONDITIONALLY RENDER SCANNER OVERLAY */}
+      {isScanning && (
+        <ScannerOverlay
+          onScanned={handleBarcodeScanned}
+          onClose={() => setIsScanning(false)}
+        />
       )}
     </View>
   );
@@ -296,5 +312,11 @@ const styles = StyleSheet.create({
   info: {
     fontStyle: 'italic',
     marginTop: 16,
+  },
+  // Extra row style for the item ID + scan button
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
   },
 });
