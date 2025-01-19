@@ -89,5 +89,16 @@ export function useWarehouseService() {
     },
 
     // You can similarly add "listItems", "createItem", etc.
+
+    createItem: async (warehouseId: string, itemId: string, itemName: string, quantity: number) => {
+      const body = { itemId, itemName, quantity };
+      const data = await apiFetch(`/warehouses/${warehouseId}/items`, 'POST', accessToken, body);
+      return data;
+    },
+
+    listItems: async (warehouseId: string): Promise<any[]> => {
+      const data = await apiFetch(`/warehouses/${warehouseId}/items`, 'GET', accessToken);
+      return data as any[];
+    }
   };
 }
