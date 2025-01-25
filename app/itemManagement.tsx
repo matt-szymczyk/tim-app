@@ -68,6 +68,7 @@ export default function ItemManagementScreen() {
   useEffect(() => {
     if (selectedWarehouseId) {
       fetchItems(selectedWarehouseId);
+      fetchWarehouses(); // TODO - handle this better
     } else {
       setItems([]);
     }
