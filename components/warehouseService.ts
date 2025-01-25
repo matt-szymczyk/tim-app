@@ -3,7 +3,7 @@
 import { useAuth } from "./AuthContext";
 
 // Adjust with your actual API base URL
-const API_BASE_URL = 'https://t69lnh1vyd.execute-api.eu-north-1.amazonaws.com'; 
+const API_BASE_URL = 'https://t69lnh1vyd.execute-api.eu-north-1.amazonaws.com';
 
 /**
  * Example type definitions
@@ -142,7 +142,43 @@ export function useWarehouseService() {
     return data;
   };
 
-  // Return all methods
+  // ----------------------------------------------------------------
+  // Access endpoints (NEW)
+  // ----------------------------------------------------------------
+  /**
+   * Grant or update user access to a warehouse (owner role required).
+   */
+  const grantAccess = async (
+    warehouseId: string,
+    userId: string,
+    role: string
+  ) => {
+    const body = { userId, role };
+    const data = await apiFetch(`/warehouses/${warehouseId}/access`, 'POST', accessToken, body);
+    return data;
+  };
+
+  /**
+   * List which users have access and their roles (owner role required).
+   */
+  const listAccess = async (
+    warehouseId: string
+  ): Promise<{ userId: string; role: string }[]> => {
+    const data = await apiFetch(`/warehouses/${warehouseId}/access`, 'GET', accessToken);
+    return data as { userId: string; role: string }[];
+  };
+
+  /**
+   * Revoke user access to a warehouse (owner role required).
+   */
+  const revokeAccess = async (
+    warehouseId: string,
+    userId: string
+  ) => {
+    const data = await apiFetch(`/warehouses/${warehouseId}/access/${userId}`, 'DELETE', accessToken);
+    return data;
+  };
+
   return {
     // Warehouse CRUD
     listWarehouses,
@@ -157,5 +193,10 @@ export function useWarehouseService() {
     getItem,
     updateItem,
     deleteItem,
+
+    // Access management
+    grantAccess,
+    listAccess,
+    revokeAccess,
   };
 }

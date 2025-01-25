@@ -17,6 +17,15 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
+          name="accessManagement"
+          options={{
+            title: "Users",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="cube-outline" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="warehouses/index"
           options={{
             title: "Warehouses",
