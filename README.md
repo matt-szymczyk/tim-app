@@ -1,4 +1,4 @@
-# Welcome to my React Native project!
+# Welcome to my React Native project for my university course!
 
 This is an [Expo](https://expo.dev) project 
 
