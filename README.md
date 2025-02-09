@@ -1,5 +1,7 @@
 # Welcome to my React Native project for my university course!
 
+You can find backend code [here](https://github.com/matt-szymczyk/tim-serverless)
+
 This is an [Expo](https://expo.dev) project 
 
 ## Get started
