@@ -1,9 +1,31 @@
 // app/_layout.tsx
 import { Tabs } from "expo-router";
+import * as Linking from 'expo-linking';
+import { useEffect } from "react";
 import { AuthProvider } from "../components/AuthContext"; 
 import { Ionicons } from "@expo/vector-icons";
 
 export default function RootLayout() {
+  // Set up deep link handling
+  useEffect(() => {
+    // Register a URL event listener
+    const subscription = Linking.addEventListener('url', (event) => {
+      console.log('Deep link detected:', event.url);
+      // The URL will be handled by expo-auth-session automatically
+    });
+
+    // Get the initial URL if the app was opened through a deep link
+    Linking.getInitialURL().then(url => {
+      if (url) {
+        console.log('App opened with URL:', url);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   return (
     <AuthProvider>
       <Tabs>

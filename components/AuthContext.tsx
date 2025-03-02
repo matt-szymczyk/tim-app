@@ -5,11 +5,13 @@ import {
   ResponseType, 
   exchangeCodeAsync, 
   revokeAsync, 
-  refreshAsync 
+  refreshAsync,
+  makeRedirectUri
 } from 'expo-auth-session';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
-import { Platform } from 'react-native';
+import * as Linking from 'expo-linking';
+import { Platform, Alert } from 'react-native';
 
 // Complete the auth session for web
 WebBrowser.maybeCompleteAuthSession();
@@ -17,11 +19,10 @@ WebBrowser.maybeCompleteAuthSession();
 // Fill in your Cognito details
 const clientId = '5o5kgscohrkogihj339mgj1ol8';
 const userPoolUrl = 'https://timapp.auth.eu-north-1.amazoncognito.com';
-const redirectUri = Platform.select({
-  // For native, a scheme like myapp://auth must be set in app.json under "scheme"
-  native: 'myapp://auth',
-  // For web dev, adjust as needed
-  web: 'http://localhost:8081'
+// Generate redirect URI with proper Linking configuration
+const redirectUri = makeRedirectUri({
+  scheme: 'myapp',
+  path: 'redirect',
 });
 
 const discoveryDocument = {
@@ -102,14 +103,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (response?.type === 'success') {
       const { code } = response.params;
       if (code) {
+        console.log('Auth success, exchanging code for tokens');
         exchangeFn(code);
       }
+    } else if (response) {
+      console.log('Auth response not successful:', response.type);
     }
   }, [response]);
 
   // Exchange code for access/refresh token
   const exchangeFn = async (code: string) => {
     try {
+      console.log('Exchanging code for tokens using redirect URI:', redirectUri);
       const tokenResponse = await exchangeCodeAsync(
         {
           clientId,
@@ -119,16 +124,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         discoveryDocument
       );
+      
+      console.log('Token exchange successful');
       setAuthTokens(tokenResponse);
       await saveTokensToStore(tokenResponse);
+      
+      // Show success alert so user knows login worked
+      if (Platform.OS !== 'web') {
+        Alert.alert('Login Successful', 'You are now logged in.');
+      }
     } catch (error) {
-      console.error('exchangeCodeError', error);
+      console.error('Token exchange error:', error);
+      
+      // Show error alert so user knows what happened
+      if (Platform.OS !== 'web') {
+        Alert.alert('Login Failed', 'There was a problem logging in. Please try again.');
+      }
     }
   };
 
   // Manual login flow triggers Cognito Hosted UI
   const signIn = async () => {
-    promptAsync({ useProxy: false });
+    try {
+      console.log('Starting auth flow with redirect URI:', redirectUri);
+      
+      // Close any existing sessions first
+      await WebBrowser.dismissAuthSession();
+      
+      const result = await promptAsync({ 
+        useProxy: false,
+        showInRecents: true,
+        createTask: false, // Important for seamless redirection on Android
+      });
+      
+      if (result.type !== 'success') {
+        console.log('Auth was dismissed or failed:', result);
+        if (Platform.OS !== 'web' && result.type === 'cancel') {
+          Alert.alert('Login Cancelled', 'The login process was cancelled.');
+        }
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+      
+      if (Platform.OS !== 'web') {
+        Alert.alert('Login Error', 'There was a problem starting the login process.');
+      }
+    }
   };
 
   // Revoke & clear
